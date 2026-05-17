@@ -1,0 +1,41 @@
+# Druid 数据源配置
+spring:
+  application:
+    name: mybatis
+  datasource:
+    # 数据库驱动类名称
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # 数据库连接url
+    url: 'jdbc:mysql://localhost:3306/my_test?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowMultiQueries=true'
+    # 数据库连接用户名
+    username: root
+    # 数据库连接密码
+    password: root
+  servlet:
+    multipart:
+      # 单个文件上传大小限制
+      max-file-size: 10MB
+      # 总上传数据大小限制
+      max-request-size: 100MB
+# 事务管理日志
+logging:
+  level:
+    # 输出事务管理日志
+    org.springframework.jdbc.support.JdbcTransactionManager: DEBUG
+
+# mybatis日志输出到控制台
+mybatis:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    # 开启驼峰自动映射
+    map-underscore-to-camel-case: true
+
+# JWT 配置
+jwt:
+  secret: LZ92GIRQdcTtxwQQ5zCnIXmaX7jVx5ygO9yfuC828wc=
+  expiration: 86400000
+
+# OSS 配置
+oss:
+  region: cn-beijing
+  bucket-name: cloud-database-20260506

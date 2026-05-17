@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fenghaze.mybatis.mapper.EmpMapper">
+    <select id="list" resultType="com.fenghaze.mybatis.pojo.Emp">
+        SELECT * FROM emp
+        <where>
+            <if test="empNo != null and empNo != ''">
+                AND emp_no = #{empNo}
+            </if>
+            <if test="startTime != null">
+                AND hiredate &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                AND hiredate &lt;= #{endTime}
+            </if>
+        </where>
+        LIMIT #{start}, #{pageSize}
+    </select>
+
+    <delete id="delete">
+        DELETE FROM emp WHERE emp_id IN
+        <foreach collection="empIds" item="empId" open="(" separator="," close=")">
+            #{empId}
+        </foreach>
+    </delete>
+
+
+    <insert id="insert">
+        INSERT INTO emp (emp_no, password, avatar, job, hiredate, sal, dept_id, name, age, gender, phone)
+        VALUES (#{empNo}, #{password}, #{avatar}, #{job}, #{hiredate}, #{sal}, #{deptId}, #{name}, #{age}, #{gender}, #{phone})
+    </insert>
+    <update id="updatePartial" parameterType="map">
+        UPDATE emp
+        <set>
+            <if test="_parameter.containsKey('name')">name = #{name},</if>
+            <if test="_parameter.containsKey('avatar')">avatar = #{avatar},</if>
+            <if test="_parameter.containsKey('job')">job = #{job},</if>
+            <if test="_parameter.containsKey('hiredate')">hiredate = #{hiredate},</if>
+            <if test="_parameter.containsKey('sal')">sal = #{sal},</if>
+            <if test="_parameter.containsKey('deptId')">dept_id = #{deptId},</if>
+            <if test="_parameter.containsKey('age')">age = #{age},</if>
+            <if test="_parameter.containsKey('gender')">gender = #{gender},</if>
+            <if test="_parameter.containsKey('phone')">phone = #{phone},</if>
+            <if test="_parameter.containsKey('empNo')">emp_no = #{empNo},</if>
+            <if test="_parameter.containsKey('password')">password = #{password},</if>
+        </set>
+        WHERE emp_id = #{empId}
+    </update>
+</mapper>
