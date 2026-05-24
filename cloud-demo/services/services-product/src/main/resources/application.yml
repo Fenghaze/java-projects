@@ -3,7 +3,9 @@ spring:
     name: services-product
   cloud:
     nacos:
-      discovery:
-        server-addr: 192.168.1.116:8848
+      server-addr: 192.168.1.116:8848
+      config:
+        import-check:
+          enabled: false
 server:
   port: 8002

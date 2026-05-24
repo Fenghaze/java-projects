@@ -6,9 +6,20 @@ spring:
       server-addr: 192.168.1.116:8848
       config:
         namespace: 35bfa351-77d6-4f0a-9c81-2b7f10372edf
+    openfeign:
+      circuitbreaker:
+        enabled: true
+      client:
+        config:
+          services-product:
+            connectTimeout: 5000
+            readTimeout: 5000
   config:
     import:
       - nacos:common.yml?group=order
       - nacos:database.yml?group=order
 server:
   port: 8001
+logger:
+    level:
+        com.felan.order.feign: debug # 包名下所有组件会开启日志
