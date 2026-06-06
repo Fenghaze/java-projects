@@ -14,6 +14,10 @@ spring:
           services-product:
             connectTimeout: 5000
             readTimeout: 5000
+    sentinel:
+      transport:
+        dashboard: localhost:8888
+      eager: true # 启动时就加载 Sentinel 相关组件，默认是第一次调用时才加载
   config:
     import:
       - nacos:common.yml?group=order

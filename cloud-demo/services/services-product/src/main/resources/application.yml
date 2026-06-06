@@ -7,5 +7,9 @@ spring:
       config:
         import-check:
           enabled: false
+    sentinel:
+      transport:
+        dashboard: localhost:8888
+      eager: true # 启动时就加载 Sentinel 相关组件，默认是第一次调用时才加载
 server:
   port: 8002

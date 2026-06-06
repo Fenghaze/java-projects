@@ -1,0 +1,12 @@
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: order # 路由名称
+          uri: lb://services-order # 目标服务，lb: 表示负载均衡
+          predicates: # 断言（满足条件时转发）
+            - Path=/api/order/**
+        - id: product
+          uri: lb://services-product
+          predicates:
+            - Path=/api/product/**

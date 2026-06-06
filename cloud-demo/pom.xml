@@ -13,6 +13,7 @@
   <modules>
     <module>services</module>
     <module>model</module>
+    <module>gateway</module>
   </modules>
   <groupId>com.fenghaze</groupId>
   <artifactId>cloud-demo</artifactId>

@@ -1,4 +1,6 @@
 package com.felan.order.service.impl;
+import com.alibaba.csp.sentinel.annotation.SentinelResource;
+import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.felan.order.feign.ProductFeignClient;
 import com.felan.product.bean.Product;
 import java.math.BigDecimal;
@@ -15,9 +17,11 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 public class OrderServiceImpl implements OrderService {
+
   @Autowired
   private ProductFeignClient productFeignClient;
 
+  @SentinelResource(value = "createOrder", blockHandler = "createOrderFallback")
   @Override
   public Order createOrder(List<Long> productIdList, Long userId) {
     Order order = new Order();
@@ -31,7 +35,16 @@ public class OrderServiceImpl implements OrderService {
     return order;
   }
 
-  /**
+  public Order createOrderFallback(List<Long> productIdList, Long userId, BlockException ex) {
+    Order order = new Order();
+    order.setOrderId(0L);
+    order.setTotalPrice(new BigDecimal(0));
+    order.setUserId(userId);
+    order.setUsername("未知用户");
+    order.setAddress(ex.getClass().toString());
+    return order;
+  }
+    /**
    * 从远程 Product 服务获取订单信息
    * @param productId
    * @return
