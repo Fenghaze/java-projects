@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.felan.usercenter.mapper.UserMapper">
+
+  <select id="findByAccountOrEmailOrPhone" resultType="com.felan.usercenter.model.User">
+    SELECT * FROM user
+    <where>
+      <if test="account != null and account != ''">
+        OR account = #{account}
+      </if>
+      <if test="email != null and email != ''">
+        OR email = #{email}
+      </if>
+      <if test="phone != null and phone != ''">
+        OR phone = #{phone}
+      </if>
+    </where>
+    LIMIT 1
+  </select>
+</mapper>
