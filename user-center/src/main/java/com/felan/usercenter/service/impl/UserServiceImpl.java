@@ -1,8 +1,10 @@
 package com.felan.usercenter.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.felan.usercenter.mapper.UserMapper;
+import com.felan.usercenter.mapper.UserQueryBuilder;
 import com.felan.usercenter.model.User;
 import com.felan.usercenter.service.UserService;
 import com.felan.usercenter.utils.Result;
@@ -91,6 +93,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     if (!validPasswordRes.isSuccess()) {
       return validPasswordRes;
     }
+    // 新注册用户默认为普通角色
+    user.setRole(0);
     // 用户密码加密
     String securePassword = setSecurePassword(user.getPassword());
     user.setPassword(securePassword);
@@ -99,6 +103,38 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
       return Result.error("注册失败");
     }
     return Result.success("注册成功", user.getId());
+  }
+
+  @Override
+  public Result deleteById(Long id, Long operatorId) {
+    // 校验操作人是否为管理员
+    User operator = userMapper.selectById(operatorId);
+    if (operator == null || !Integer.valueOf(1).equals(operator.getRole())) {
+      return Result.error("无权限：仅管理员可执行删除操作");
+    }
+    // `@TableLogic` 会由 deleteById 自动将 DELETE 转为 UPDATE 设置 is_delete=1
+    int rows = userMapper.deleteById(id);
+    if (rows <= 0) {
+      return Result.error("用户不存在");
+    }
+    return Result.success("删除成功", null);
+  }
+
+  @Override
+  public Result listUsers(User user, Integer pageNum, Integer pageSize) {
+    // 默认页码和大小
+    if (pageNum == null || pageNum < 1) {
+      pageNum = 1;
+    }
+    if (pageSize == null || pageSize < 1) {
+      pageSize = 10;
+    }
+    // 查询条件由 UserQueryBuilder 构建
+    QueryWrapper<User> wrapper = UserQueryBuilder.buildListWrapper(user);
+    // 分页查询
+    Page<User> page = new Page<>(pageNum, pageSize);
+    Page<User> result = userMapper.selectPage(page, wrapper);
+    return Result.success("查询成功", result);
   }
 
   // ========== 格式校验（纯静态校验，不含 DB 操作） ==========

@@ -7,4 +7,6 @@ import com.felan.usercenter.utils.Result;
 public interface UserService extends IService<User> {
   Result login(User user);
   Result register(User user);
+  Result deleteById(Long id, Long operatorId);
+  Result listUsers(User user, Integer pageNum, Integer pageSize);
 }

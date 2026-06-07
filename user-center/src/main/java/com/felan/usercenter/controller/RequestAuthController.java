@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 @RequestMapping("/api/auth")
-public class RequestController {
+public class RequestAuthController {
 
   private static final String USER_SESSION_KEY = "user-center:session:";
 
@@ -34,4 +34,5 @@ public class RequestController {
   public Result register(@RequestBody User user) {
     return userService.register(user);
   }
+
 }
