@@ -1,5 +1,8 @@
 package com.sky.context;
 
+/**
+ * 线程安全的局部变量类
+ */
 public class BaseContext {
 
     public static ThreadLocal<Long> threadLocal = new ThreadLocal<>();
