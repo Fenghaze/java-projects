@@ -1,11 +1,17 @@
 package com.sky.service.impl;
 
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import com.sky.dto.DishDTO;
+import com.sky.dto.DishPageQueryDTO;
 import com.sky.entity.Dish;
 import com.sky.entity.DishFlavor;
+import com.sky.entity.Employee;
 import com.sky.mapper.DishFlavorMapper;
 import com.sky.mapper.DishMapper;
+import com.sky.result.PageResult;
 import com.sky.service.DishService;
+import com.sky.vo.DishVO;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -37,5 +43,13 @@ public class DishServiceImpl implements DishService {
             flavors.forEach(dishFlavor -> dishFlavor.setDishId(dishId));
             dishFlavorMapper.insertBatch(flavors);
         }
+    }
+
+    @Override
+    public PageResult list(DishPageQueryDTO dishPageQueryDTO) {
+        PageHelper.startPage(dishPageQueryDTO.getPage(), dishPageQueryDTO.getPageSize());
+        // 将返回结果封装到分页插件的Page中，dao层的list方法无需再实现分页sql
+        Page<DishVO> page = dishMapper.list(dishPageQueryDTO);
+        return new PageResult(page.getTotal(), page.getResult());
     }
 }
