@@ -1,7 +1,11 @@
 package com.sky.service.impl;
 
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import com.sky.constant.PasswordConstant;
 import com.sky.context.BaseContext;
+import com.sky.dto.EmployeePageQueryDTO;
+import com.sky.result.PageResult;
 import java.time.LocalDateTime;
 
 import com.sky.constant.MessageConstant;
@@ -14,6 +18,7 @@ import com.sky.exception.AccountNotFoundException;
 import com.sky.exception.PasswordErrorException;
 import com.sky.mapper.EmployeeMapper;
 import com.sky.service.EmployeeService;
+import java.util.List;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -79,5 +84,14 @@ public class EmployeeServiceImpl implements EmployeeService {
         // 保存数据
         employeeMapper.insert(employee);
         return employee;
+    }
+
+    @Override
+    public PageResult list(EmployeePageQueryDTO employeePageQueryDTO) {
+        // 使用分页插件（PageHelper）进行查询，底层实现sql：SELECT * FROM employee LIMIT page, pageSize
+        PageHelper.startPage(employeePageQueryDTO.getPage(), employeePageQueryDTO.getPageSize());
+        // 将返回结果封装到分页插件的Page中，dao层的list方法无需再实现分页sql
+        Page<Employee> page = employeeMapper.list(employeePageQueryDTO);
+        return new PageResult(page.getTotal(), page.getResult());
     }
 }
