@@ -94,4 +94,16 @@ public class EmployeeServiceImpl implements EmployeeService {
         Page<Employee> page = employeeMapper.list(employeePageQueryDTO);
         return new PageResult(page.getTotal(), page.getResult());
     }
+
+    @Override
+    public void startOrStop(Integer status, Long id) {
+        // 通过构建器模式（@Builder注解），创建一个Employee对象，并设置属性值，然后进行更新
+        Employee employee = Employee.builder()
+                .status(status)
+                .id(id)
+                .updateTime(LocalDateTime.now())
+                .updateUser(BaseContext.getCurrentId())
+                .build();
+        employeeMapper.update(employee);
+    }
 }
