@@ -6,7 +6,7 @@
         insert into dish (name, category_id, price, status, image, description, create_time, update_time, create_user, update_user)
         values (#{name}, #{categoryId}, #{price}, #{status}, #{image}, #{description},#{createTime}, #{updateTime}, #{createUser}, #{updateUser})
     </insert>
-    <select id="list" resultType="com.sky.vo.DishVO">
+    <select id="pageQuery" resultType="com.sky.vo.DishVO">
         select d.*, c.name as categoryName from dish d
         left outer join category c on d.category_id = c.id
         <where>

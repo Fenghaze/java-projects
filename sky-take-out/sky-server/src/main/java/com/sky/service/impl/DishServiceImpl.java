@@ -51,10 +51,10 @@ public class DishServiceImpl implements DishService {
     }
 
     @Override
-    public PageResult list(DishPageQueryDTO dishPageQueryDTO) {
+    public PageResult pageQuery(DishPageQueryDTO dishPageQueryDTO) {
         PageHelper.startPage(dishPageQueryDTO.getPage(), dishPageQueryDTO.getPageSize());
         // 将返回结果封装到分页插件的Page中，dao层的list方法无需再实现分页sql
-        Page<DishVO> page = dishMapper.list(dishPageQueryDTO);
+        Page<DishVO> page = dishMapper.pageQuery(dishPageQueryDTO);
         return new PageResult(page.getTotal(), page.getResult());
     }
 
