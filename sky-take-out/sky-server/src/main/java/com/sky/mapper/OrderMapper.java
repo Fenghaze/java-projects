@@ -19,4 +19,19 @@ public interface OrderMapper {
      */
     @AutoFill(value = OperationType.INSERT)
     Long insert(Orders orders);
+
+    /**
+     * 根据订单号查询订单数据
+     * @param outTradeNo
+     * @return
+     */
+    @Select("select * from orders where number = #{outTradeNo}")
+    Orders getByNumber(String outTradeNo);
+
+    /**
+     * 修改订单数据
+     * @param orders
+     */
+    @AutoFill(value = OperationType.UPDATE)
+    void update(Orders orders);
 }

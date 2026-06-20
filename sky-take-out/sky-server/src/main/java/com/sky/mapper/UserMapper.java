@@ -27,4 +27,7 @@ public interface UserMapper {
     @Options(useGeneratedKeys = true, keyProperty = "id")
     @AutoFill(value = OperationType.INSERT)
     void insert(User user);
+
+    @Select("select * from user where id = #{id}")
+    User selectById(Long id);
 }
