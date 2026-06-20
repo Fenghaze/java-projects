@@ -1,8 +1,10 @@
 package com.sky.service.impl;
 
-import com.alibaba.fastjson.JSONObject;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import com.sky.constant.MessageConstant;
 import com.sky.context.BaseContext;
+import com.sky.dto.OrdersPageQueryDTO;
 import com.sky.dto.OrdersPaymentDTO;
 import com.sky.dto.OrdersSubmitDTO;
 import com.sky.entity.AddressBook;
@@ -15,9 +17,12 @@ import com.sky.mapper.OrderDetailMapper;
 import com.sky.mapper.OrderMapper;
 import com.sky.mapper.ShoppingCartMapper;
 import com.sky.mapper.UserMapper;
+import com.sky.result.PageResult;
 import com.sky.service.OrderService;
 import com.sky.vo.OrderSubmitVO;
+import com.sky.vo.OrderVO;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -111,5 +116,39 @@ public class OrderServiceImpl implements OrderService {
             .checkoutTime(LocalDateTime.now())
             .build();
         orderMapper.update(orders);
+    }
+
+    @Override
+    public OrderVO getDetailById(Long id) {
+        // 查询订单信息
+        Orders orders = orderMapper.getById(id);
+        // 查询订单详细信息
+        List<OrderDetail> orderDetails = orderDetailMapper.getByOrderId(Long.valueOf(id));
+        // 组装数据
+        OrderVO orderVO = new OrderVO();
+        BeanUtils.copyProperties(orders, orderVO);
+        orderVO.setOrderDetailList(orderDetails);
+        return orderVO;
+    }
+
+    @Override
+    public PageResult getHistoryOrders(OrdersPageQueryDTO ordersPageQueryDTO) {
+        // 使用分页插件（PageHelper）进行查询，底层实现sql：SELECT * FROM employee LIMIT page, pageSize
+        PageHelper.startPage(ordersPageQueryDTO.getPage(), ordersPageQueryDTO.getPageSize());
+        Long userId = BaseContext.getCurrentId();
+        ordersPageQueryDTO.setUserId(userId);
+        Page<OrderVO> page = orderMapper.pageQuery(ordersPageQueryDTO);
+        List<OrderVO> list = new ArrayList();
+        if (page != null && page.getTotal() > 0) {
+            page.getResult().forEach(order -> {
+                // 查询订单详细信息
+                List<OrderDetail> orderDetails = orderDetailMapper.getByOrderId(order.getId());
+                OrderVO orderVO = new OrderVO();
+                BeanUtils.copyProperties(order, orderVO);
+                orderVO.setOrderDetailList(orderDetails);
+                list.add(orderVO);
+            });
+        }
+        return new PageResult(page.getTotal(), list);
     }
 }
