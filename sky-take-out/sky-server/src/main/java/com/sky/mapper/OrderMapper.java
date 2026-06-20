@@ -1,0 +1,22 @@
+package com.sky.mapper;
+
+import com.sky.annotation.AutoFill;
+import com.sky.entity.Orders;
+import com.sky.enumeration.OperationType;
+import org.apache.ibatis.annotations.Delete;
+import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
+import org.springframework.core.annotation.Order;
+
+@Mapper
+public interface OrderMapper {
+
+    /**
+     * 新增订单数据
+     * @param orders
+     */
+    @AutoFill(value = OperationType.INSERT)
+    Long insert(Orders orders);
+}
