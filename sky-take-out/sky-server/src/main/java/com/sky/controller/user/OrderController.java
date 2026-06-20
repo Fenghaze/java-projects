@@ -64,4 +64,18 @@ public class OrderController {
         PageResult orderVOPageResult = orderService.getHistoryOrders(ordersPageQueryDTO);
         return Result.success(orderVOPageResult);
     }
+
+    @PutMapping("/cancel/{id}")
+    @ApiOperation("取消订单")
+    public Result cancel(@PathVariable Long id) {
+        orderService.cancel(id);
+        return Result.success();
+    }
+
+    @PostMapping("/repetition/{id}")
+    @ApiOperation("再来一单")
+    public Result repetition(@PathVariable Long id) {
+        orderService.repetition(id);
+        return Result.success();
+    }
 }

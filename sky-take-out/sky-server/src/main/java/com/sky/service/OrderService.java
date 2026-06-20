@@ -41,4 +41,16 @@ public interface OrderService {
      * @return
      */
     PageResult getHistoryOrders(OrdersPageQueryDTO ordersPageQueryDTO);
+
+    /**
+     * 取消订单
+     * @param id
+     */
+    void cancel(Long id);
+
+    /**
+     * 再来一单：仅需将订单商品添加到购物车即可
+     * @param id
+     */
+    void repetition(Long id);
 }

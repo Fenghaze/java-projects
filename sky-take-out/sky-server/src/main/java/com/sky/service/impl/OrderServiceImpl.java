@@ -12,6 +12,7 @@ import com.sky.entity.OrderDetail;
 import com.sky.entity.Orders;
 import com.sky.entity.ShoppingCart;
 import com.sky.exception.AddressBookBusinessException;
+import com.sky.exception.OrderBusinessException;
 import com.sky.mapper.AddressBookMapper;
 import com.sky.mapper.OrderDetailMapper;
 import com.sky.mapper.OrderMapper;
@@ -24,6 +25,7 @@ import com.sky.vo.OrderVO;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -150,5 +152,45 @@ public class OrderServiceImpl implements OrderService {
             });
         }
         return new PageResult(page.getTotal(), list);
+    }
+
+    @Override
+    public void cancel(Long id) {
+        // 根据订单号查询订单
+        Orders orders = orderMapper.getById(id);
+        if (orders == null) {
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+        if (orders.getStatus() > Orders.TO_BE_CONFIRMED) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+        // 订单处于待接单状态下取消，需要进行退款
+        if (orders.getStatus().equals(Orders.TO_BE_CONFIRMED)) {
+            // 支付状态修改为：退款
+            orders.setPayStatus(Orders.REFUND);
+        }
+        orders.setStatus(Orders.CANCELLED); // 订单状态修改为：取消
+        orders.setCancelReason("用户手动取消");
+        orders.setCancelTime(LocalDateTime.now());
+        orderMapper.update(orders);
+    }
+
+    @Override
+    public void repetition(Long id) {
+        Long userId = BaseContext.getCurrentId();
+        // 查询订单详细信息
+        List<OrderDetail> orderDetails = orderDetailMapper.getByOrderId(id);
+        if (orderDetails == null || orderDetails.isEmpty()) {
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+        List<ShoppingCart> cartList = orderDetails.stream().map(orderDetail -> {
+            ShoppingCart cart = new ShoppingCart();
+            BeanUtils.copyProperties(orderDetail, cart, "id");
+            cart.setUserId(userId);
+            cart.setCreateTime(LocalDateTime.now());
+            return cart;
+        }).collect(Collectors.toList());
+        // 将订单详细信息添加到购物车数据库中
+        shoppingCartMapper.insertBatch(cartList);
     }
 }
