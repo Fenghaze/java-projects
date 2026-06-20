@@ -10,7 +10,6 @@ import com.sky.mapper.SetmealMapper;
 import com.sky.mapper.ShoppingCartMapper;
 import com.sky.service.ShoppingCartService;
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -72,5 +71,32 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         shoppingCart.setUserId(userId);
         List<ShoppingCart> list = shoppingCartMapper.list(shoppingCart);
         return list;
+    }
+
+    @Override
+    public void clean() {
+        // 获取当前用户id
+        Long userId = BaseContext.getCurrentId();
+        // 删除当前用户下的所有购物车数据
+        shoppingCartMapper.deleteByUserId(userId);
+    }
+
+    @Override
+    public void sub(ShoppingCartDTO shoppingCartDTO) {
+        ShoppingCart shoppingCart = new ShoppingCart();
+        BeanUtils.copyProperties(shoppingCartDTO, shoppingCart);
+        Long userId = BaseContext.getCurrentId(); // 获取当前登录用户id
+        shoppingCart.setUserId(userId);
+        // 查询用户购物车数据
+        List<ShoppingCart> list = shoppingCartMapper.list(shoppingCart);
+        if (list != null || !list.isEmpty()) {
+            ShoppingCart cart = list.get(0);
+            cart.setNumber(cart.getNumber() - 1);
+            shoppingCartMapper.updateNumber(cart);
+            // 购物车商品数量为0，则删除该商品数据
+            if (cart.getNumber() == 0) {
+                shoppingCartMapper.delete(cart.getId());
+            }
+        }
     }
 }

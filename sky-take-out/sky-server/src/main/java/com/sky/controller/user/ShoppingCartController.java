@@ -8,7 +8,7 @@ import io.swagger.annotations.ApiOperation;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -34,10 +34,37 @@ public class ShoppingCartController {
         return Result.success();
     }
 
+    /**
+     * 查看购物车
+     * @return
+     */
     @GetMapping("/list")
     @ApiOperation(value = "查看购物车")
     public Result<List<ShoppingCart>> list() {
         List<ShoppingCart> shoppingCartList = shoppingCartService.list();
         return Result.success(shoppingCartList);
+    }
+
+    /**
+     * 清空购物车
+     */
+    @DeleteMapping("/clean")
+    @ApiOperation(value = "清空购物车")
+    public Result clean() {
+        shoppingCartService.clean();
+        return Result.success();
+    }
+
+    /**
+     * 删除购物车商品
+     * @param shoppingCartDTO
+     * @return
+     */
+    @PostMapping("/sub")
+    @ApiOperation(value = "删除购物车商品")
+    public Result sub(@RequestBody ShoppingCartDTO shoppingCartDTO) {
+        log.info("删除购物车商品：{}", shoppingCartDTO);
+        shoppingCartService.sub(shoppingCartDTO);
+        return Result.success();
     }
 }
