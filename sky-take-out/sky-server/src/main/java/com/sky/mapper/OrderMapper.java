@@ -66,4 +66,13 @@ public interface OrderMapper {
      */
     @Select("select * from orders where status = #{status} and order_time < #{time}")
     List<Orders> getOvertimeOrders(@Param("status") Integer status, @Param("time") LocalDateTime time);
+
+    /**
+     * 统计当天营业额
+     * @param status 订单状态
+     * @param begin
+     * @param end
+     * @return 营业额
+     */
+    Double turnoverStatistics(@Param("status") Integer status, @Param("begin") LocalDateTime begin, @Param("end") LocalDateTime end);
 }
