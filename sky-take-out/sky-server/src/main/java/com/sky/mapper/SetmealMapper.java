@@ -10,6 +10,7 @@ import com.sky.vo.SetmealVO;
 import java.util.List;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 @Mapper
@@ -75,4 +76,10 @@ public interface SetmealMapper {
         "from setmeal_dish sd left join dish d on sd.dish_id = d.id " +
         "where sd.setmeal_id = #{setmealId}")
     List<DishItemVO> getDishItemBySetmealId(Long setmealId);
+
+    /**
+     * 根据条件统计套餐数量
+     * @return
+     */
+    Integer countByMap(@Param("status") Integer status, @Param("categoryId") Long categoryId);
 }

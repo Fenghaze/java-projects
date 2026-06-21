@@ -37,7 +37,7 @@
         </where>
         order by create_time desc
     </select>
-    <delete id="batchDelete">
+  <delete id="batchDelete">
         delete from dish where id in
         <foreach item="id" collection="ids" open="(" separator="," close=")">
             #{id}
@@ -73,4 +73,15 @@
         </set>
         where id = #{id}
     </update>
+    <select id="countByMap" resultType="java.lang.Integer">
+        select count(id) from dish
+        <where>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="categoryId != null">
+                and category_id = #{categoryId}
+            </if>
+        </where>
+    </select>
 </mapper>
