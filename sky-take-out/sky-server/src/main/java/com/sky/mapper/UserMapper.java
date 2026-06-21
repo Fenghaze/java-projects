@@ -3,6 +3,7 @@ package com.sky.mapper;
 import com.sky.annotation.AutoFill;
 import com.sky.entity.User;
 import com.sky.enumeration.OperationType;
+import java.time.LocalDateTime;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
@@ -30,4 +31,6 @@ public interface UserMapper {
 
     @Select("select * from user where id = #{id}")
     User selectById(Long id);
+
+    Integer totalUserStatistics(LocalDateTime begin, LocalDateTime end);
 }

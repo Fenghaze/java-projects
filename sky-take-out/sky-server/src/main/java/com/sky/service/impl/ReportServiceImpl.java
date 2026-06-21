@@ -2,8 +2,10 @@ package com.sky.service.impl;
 
 import com.sky.entity.Orders;
 import com.sky.mapper.OrderMapper;
+import com.sky.mapper.UserMapper;
 import com.sky.service.ReportService;
 import com.sky.vo.TurnoverReportVO;
+import com.sky.vo.UserReportVO;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -18,6 +20,8 @@ import org.springframework.stereotype.Service;
 public class ReportServiceImpl implements ReportService {
     @Autowired
     private OrderMapper orderMapper;
+    @Autowired
+    private UserMapper userMapper;
 
 
     @Override
@@ -40,5 +44,30 @@ public class ReportServiceImpl implements ReportService {
                 .turnoverList(String.join(",", turnoverList))
                 .build();
         return turnoverReportVO;
+    }
+
+    @Override
+    public UserReportVO userStatistics(LocalDate begin, LocalDate end) {
+        List<String> dateList = new ArrayList<>();
+        List<String> totalUserList = new ArrayList<>();
+        List<String> newUserList = new ArrayList<>();
+        while (!begin.isEqual(end.plusDays(1))) {
+            dateList.add(begin.toString());
+            totalUserList.add(String.valueOf(userMapper.totalUserStatistics(
+                null,
+                LocalDateTime.of(begin, LocalTime.MAX)
+            )));
+            newUserList.add(String.valueOf(userMapper.totalUserStatistics(
+                LocalDateTime.of(begin, LocalTime.MIN),
+                LocalDateTime.of(begin, LocalTime.MAX)
+            )));
+            begin = begin.plusDays(1);
+        }
+        UserReportVO userReportVO = UserReportVO.builder()
+            .dateList(String.join(",", dateList))
+            .totalUserList(String.join(",", totalUserList))
+            .newUserList(String.join(",", newUserList))
+            .build();
+        return userReportVO;
     }
 }
