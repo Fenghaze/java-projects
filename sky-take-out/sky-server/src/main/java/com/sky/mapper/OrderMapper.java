@@ -6,7 +6,10 @@ import com.sky.dto.OrdersPageQueryDTO;
 import com.sky.entity.Orders;
 import com.sky.enumeration.OperationType;
 import com.sky.vo.OrderVO;
+import java.time.LocalDateTime;
+import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 @Mapper
@@ -56,4 +59,11 @@ public interface OrderMapper {
      */
     @Select("select count(id) from orders where status = #{statusCode}")
     Integer countStatus(Integer statusCode);
+
+    /**
+     * 查询超时订单
+     * @return
+     */
+    @Select("select * from orders where status = #{status} and order_time < #{time}")
+    List<Orders> getOvertimeOrders(@Param("status") Integer status, @Param("time") LocalDateTime time);
 }
