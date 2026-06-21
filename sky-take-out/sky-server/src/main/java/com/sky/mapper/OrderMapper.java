@@ -75,4 +75,10 @@ public interface OrderMapper {
      * @return 营业额
      */
     Double turnoverStatistics(@Param("status") Integer status, @Param("begin") LocalDateTime begin, @Param("end") LocalDateTime end);
+
+    /**
+     * 查询订单数
+     * @return
+     */
+    Integer orderCountStatistics(@Param("status") Integer status, @Param("begin") LocalDateTime begin, @Param("end") LocalDateTime end);
 }
