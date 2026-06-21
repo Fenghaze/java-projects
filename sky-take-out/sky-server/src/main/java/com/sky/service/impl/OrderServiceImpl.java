@@ -1,5 +1,6 @@
 package com.sky.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.sky.constant.MessageConstant;
@@ -26,9 +27,12 @@ import com.sky.service.OrderService;
 import com.sky.vo.OrderStatisticsVO;
 import com.sky.vo.OrderSubmitVO;
 import com.sky.vo.OrderVO;
+import com.sky.websocket.WebSocketServer;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -47,7 +51,7 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private OrderDetailMapper orderDetailMapper;
     @Autowired
-    private UserMapper userMapper;
+    private WebSocketServer webSocketServer;
 
     @Override
     public OrderSubmitVO submit(OrdersSubmitDTO ordersSubmitDTO) {
@@ -122,6 +126,12 @@ public class OrderServiceImpl implements OrderService {
             .checkoutTime(LocalDateTime.now())
             .build();
         orderMapper.update(orders);
+        // 支付成功后，推送订单消息
+        Map map = new HashMap();
+        map.put("type", 1); // 接单type
+        map.put("orderId", ordersDB.getId());
+        map.put("content", "订单号：" + outTradeNo);
+        webSocketServer.sendToAllClient(JSON.toJSONString(map));
     }
 
     @Override
@@ -269,5 +279,18 @@ public class OrderServiceImpl implements OrderService {
         orders.setStatus(Orders.COMPLETED);
         orders.setDeliveryTime(LocalDateTime.now());
         orderMapper.update(orders);
+    }
+
+    @Override
+    public void reminder(Long id) {
+        Orders orders = orderMapper.getById(id);
+        if (orders == null) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+        Map map = new HashMap();
+        map.put("type", 2);
+        map.put("orderId", id);
+        map.put("content", "订单号：" + orders.getNumber() + "，提醒请尽快接单");
+        webSocketServer.sendToAllClient(JSON.toJSONString(map));
     }
 }

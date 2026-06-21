@@ -46,7 +46,7 @@ public class OrderController {
     public Result<String> payment(@RequestBody OrdersPaymentDTO ordersPaymentDTO) throws Exception {
         log.info("订单支付：{}", ordersPaymentDTO);
         String orderNumber = orderService.payment(ordersPaymentDTO);
-        // 默认支付成功
+        // TODO：连接wx支付功能，当前默认支付成功
         orderService.paySuccess(orderNumber);
         return Result.success(orderNumber);
     }
@@ -78,6 +78,13 @@ public class OrderController {
     @ApiOperation("再来一单")
     public Result repetition(@PathVariable Long id) {
         orderService.repetition(id);
+        return Result.success();
+    }
+
+    @GetMapping("/reminder/{id}")
+    @ApiOperation("催单")
+    public Result reminder(@PathVariable Long id) {
+        orderService.reminder(id);
         return Result.success();
     }
 }
