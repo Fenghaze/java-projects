@@ -4,8 +4,11 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.sky.constant.MessageConstant;
 import com.sky.context.BaseContext;
+import com.sky.dto.OrdersCancelDTO;
+import com.sky.dto.OrdersConfirmDTO;
 import com.sky.dto.OrdersPageQueryDTO;
 import com.sky.dto.OrdersPaymentDTO;
+import com.sky.dto.OrdersRejectionDTO;
 import com.sky.dto.OrdersSubmitDTO;
 import com.sky.entity.AddressBook;
 import com.sky.entity.OrderDetail;
@@ -20,6 +23,7 @@ import com.sky.mapper.ShoppingCartMapper;
 import com.sky.mapper.UserMapper;
 import com.sky.result.PageResult;
 import com.sky.service.OrderService;
+import com.sky.vo.OrderStatisticsVO;
 import com.sky.vo.OrderSubmitVO;
 import com.sky.vo.OrderVO;
 import java.time.LocalDateTime;
@@ -135,10 +139,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public PageResult getHistoryOrders(OrdersPageQueryDTO ordersPageQueryDTO) {
-        // 使用分页插件（PageHelper）进行查询，底层实现sql：SELECT * FROM employee LIMIT page, pageSize
         PageHelper.startPage(ordersPageQueryDTO.getPage(), ordersPageQueryDTO.getPageSize());
-        Long userId = BaseContext.getCurrentId();
-        ordersPageQueryDTO.setUserId(userId);
         Page<OrderVO> page = orderMapper.pageQuery(ordersPageQueryDTO);
         List<OrderVO> list = new ArrayList();
         if (page != null && page.getTotal() > 0) {
@@ -192,5 +193,81 @@ public class OrderServiceImpl implements OrderService {
         }).collect(Collectors.toList());
         // 将订单详细信息添加到购物车数据库中
         shoppingCartMapper.insertBatch(cartList);
+    }
+
+    @Override
+    public OrderStatisticsVO statistics() {
+        OrderStatisticsVO orderStatisticsVO = new OrderStatisticsVO();
+        orderStatisticsVO.setToBeConfirmed(orderMapper.countStatus(Orders.TO_BE_CONFIRMED));
+        orderStatisticsVO.setConfirmed(orderMapper.countStatus(Orders.CONFIRMED));
+        orderStatisticsVO.setDeliveryInProgress(orderMapper.countStatus(Orders.DELIVERY_IN_PROGRESS));
+        return orderStatisticsVO;
+    }
+
+    @Override
+    public void confirm(OrdersConfirmDTO ordersConfirmDTO) {
+        Orders orders = orderMapper.getById(ordersConfirmDTO.getId());
+        if (orders == null) {
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+        orders.setStatus(Orders.CONFIRMED);
+        orderMapper.update(orders);
+    }
+
+    @Override
+    public void rejection(OrdersRejectionDTO ordersRejectionDTO) {
+        Orders orders = orderMapper.getById(ordersRejectionDTO.getId());
+        if (orders == null || !orders.getStatus().equals(Orders.TO_BE_CONFIRMED)) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+        // 若支付状态为已支付，需要退款
+        Integer payStatus = orders.getPayStatus();
+        if ((payStatus.equals(Orders.PAID))) {
+            // TODO: 调用微信支付接口进行退款
+            orders.setPayStatus(Orders.REFUND);
+        }
+        orders.setRejectionReason(ordersRejectionDTO.getRejectionReason());
+        orders.setCancelTime(LocalDateTime.now());
+        orders.setStatus(Orders.CANCELLED);
+        orderMapper.update(orders);
+    }
+
+    @Override
+    public void cancel(OrdersCancelDTO ordersCancelDTO) {
+        Orders orders = orderMapper.getById(ordersCancelDTO.getId());
+        if (orders == null) {
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+        // 若支付状态为已支付，需要退款
+        Integer payStatus = orders.getPayStatus();
+        if ((payStatus.equals(Orders.PAID))) {
+            // TODO: 调用微信支付接口进行退款
+            orders.setPayStatus(Orders.REFUND);
+        }
+        orders.setCancelReason(ordersCancelDTO.getCancelReason());
+        orders.setCancelTime(LocalDateTime.now());
+        orders.setStatus(Orders.CANCELLED);
+        orderMapper.update(orders);
+    }
+
+    @Override
+    public void delivery(Long id) {
+        Orders orders = orderMapper.getById(id);
+        if (orders == null || !orders.getStatus().equals(Orders.CONFIRMED)) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+        orders.setStatus(Orders.DELIVERY_IN_PROGRESS);
+        orderMapper.update(orders);
+    }
+
+    @Override
+    public void complete(Long id) {
+        Orders orders = orderMapper.getById(id);
+        if (orders == null || !orders.getStatus().equals(Orders.DELIVERY_IN_PROGRESS)) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+        orders.setStatus(Orders.COMPLETED);
+        orders.setDeliveryTime(LocalDateTime.now());
+        orderMapper.update(orders);
     }
 }
