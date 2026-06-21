@@ -1,10 +1,13 @@
 package com.sky.service.impl;
 
+import com.sky.dto.GoodsSalesDTO;
 import com.sky.entity.Orders;
+import com.sky.mapper.OrderDetailMapper;
 import com.sky.mapper.OrderMapper;
 import com.sky.mapper.UserMapper;
 import com.sky.service.ReportService;
 import com.sky.vo.OrderReportVO;
+import com.sky.vo.SalesTop10ReportVO;
 import com.sky.vo.TurnoverReportVO;
 import com.sky.vo.UserReportVO;
 import java.time.LocalDate;
@@ -23,6 +26,8 @@ public class ReportServiceImpl implements ReportService {
     private OrderMapper orderMapper;
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private OrderDetailMapper orderDetailMapper;
 
 
     @Override
@@ -114,5 +119,26 @@ public class ReportServiceImpl implements ReportService {
             .orderCompletionRate(orderCompletionRate)
             .build();
         return orderReportVO;
+    }
+
+    @Override
+    public SalesTop10ReportVO top10(LocalDate begin, LocalDate end) {
+        List<String> nameList = new ArrayList<>();
+        List<String> numberList = new ArrayList<>();
+        List<GoodsSalesDTO> goodsSalesDTOS = orderDetailMapper.getSalesTop10(
+            Orders.COMPLETED,
+            LocalDateTime.of(begin, LocalTime.MIN),
+            LocalDateTime.of(end, LocalTime.MAX)
+        );
+        for (GoodsSalesDTO goodsSalesDTO : goodsSalesDTOS) {
+            nameList.add(goodsSalesDTO.getName());
+            numberList.add(String.valueOf(goodsSalesDTO.getNumber()));
+        }
+        begin = begin.plusDays(1);
+        SalesTop10ReportVO salesTop10ReportVO = SalesTop10ReportVO.builder()
+            .nameList(String.join(",", nameList))
+            .numberList(String.join(",", numberList))
+            .build();
+        return salesTop10ReportVO;
     }
 }
